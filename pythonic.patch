@@ -1,0 +1,196 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -3,12 +3,12 @@ name = "serde_json"
+ version = "1.0.99" # remember to update html_root_url
+ authors = ["Erick Tryzelaar <erick.tryzelaar@gmail.com>", "David Tolnay <dtolnay@gmail.com>"]
+ categories = ["encoding", "parser-implementations", "no-std"]
+-description = "A JSON serialization file format"
++description = "serde_json fork that includes a Pythonic JSON formatter"
+ documentation = "https://docs.rs/serde_json"
+ edition = "2018"
+ keywords = ["json", "serde", "serialization"]
+ license = "MIT OR Apache-2.0"
+-repository = "https://github.com/serde-rs/json"
++repository = "https://github.com/xJonathanLEI/serde_json_pythonic"
+ rust-version = "1.36"
+ 
+ [dependencies]
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -377,10 +377,12 @@ pub use crate::de::{from_slice, from_str, Deserializer, StreamDeserializer};
+ #[doc(inline)]
+ pub use crate::error::{Error, Result};
+ #[doc(inline)]
+-pub use crate::ser::{to_string, to_string_pretty, to_vec, to_vec_pretty};
++pub use crate::ser::{
++    to_string, to_string_pretty, to_string_pythonic, to_vec, to_vec_pretty, to_vec_pythonic,
++};
+ #[cfg(feature = "std")]
+ #[doc(inline)]
+-pub use crate::ser::{to_writer, to_writer_pretty, Serializer};
++pub use crate::ser::{to_writer, to_writer_pretty, to_writer_pythonic, Serializer};
+ #[doc(inline)]
+ pub use crate::value::{from_value, to_value, Map, Number, Value};
+ 
+--- a/src/ser.rs
++++ b/src/ser.rs
+@@ -37,6 +37,17 @@ where
+     }
+ }
+ 
++impl<W> Serializer<W, PythonicFormatter>
++where
++    W: io::Write,
++{
++    /// Creates a new Pythonic JSON serializer.
++    #[inline]
++    pub fn pythonic(writer: W) -> Self {
++        Serializer::with_formatter(writer, PythonicFormatter)
++    }
++}
++
+ impl<W, F> Serializer<W, F>
+ where
+     W: io::Write,
+@@ -1984,6 +1995,65 @@ impl<'a> Formatter for PrettyFormatter<'a> {
+     }
+ }
+ 
++/// This structure formats a JSON value with Pythonic flavor.
++#[derive(Clone, Debug)]
++pub struct PythonicFormatter;
++
++impl Formatter for PythonicFormatter {
++    #[inline]
++    fn begin_array_value<W>(&mut self, writer: &mut W, first: bool) -> io::Result<()>
++    where
++        W: ?Sized + io::Write,
++    {
++        if first {
++            Ok(())
++        } else {
++            writer.write_all(b", ")
++        }
++    }
++
++    #[inline]
++    fn begin_object_key<W>(&mut self, writer: &mut W, first: bool) -> io::Result<()>
++    where
++        W: ?Sized + io::Write,
++    {
++        if first {
++            Ok(())
++        } else {
++            writer.write_all(b", ")
++        }
++    }
++
++    #[inline]
++    fn begin_object_value<W>(&mut self, writer: &mut W) -> io::Result<()>
++    where
++        W: ?Sized + io::Write,
++    {
++        writer.write_all(b": ")
++    }
++
++    #[inline]
++    fn write_string_fragment<W>(&mut self, writer: &mut W, fragment: &str) -> io::Result<()>
++    where
++        W: ?Sized + io::Write,
++    {
++        let mut buf = [0, 0];
++
++        for c in fragment.chars() {
++            if c.is_ascii() {
++                writer.write_all(&[c as u8])?;
++            } else {
++                let buf = c.encode_utf16(&mut buf);
++                for i in buf {
++                    write!(writer, r"\u{:4x}", i)?;
++                }
++            }
++        }
++
++        Ok(())
++    }
++}
++
+ fn format_escaped_str<W, F>(writer: &mut W, formatter: &mut F, value: &str) -> io::Result<()>
+ where
+     W: ?Sized + io::Write,
+@@ -2081,6 +2151,26 @@ where
+     value.serialize(&mut ser)
+ }
+ 
++/// Serialize the given data structure as Pythonic JSON into the I/O
++/// stream.
++///
++/// Serialization guarantees it only feeds valid UTF-8 sequences to the writer.
++///
++/// # Errors
++///
++/// Serialization can fail if `T`'s implementation of `Serialize` decides to
++/// fail, or if `T` contains a map with non-string keys.
++#[inline]
++#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
++pub fn to_writer_pythonic<W, T>(writer: W, value: &T) -> Result<()>
++where
++    W: io::Write,
++    T: ?Sized + Serialize,
++{
++    let mut ser = Serializer::pythonic(writer);
++    value.serialize(&mut ser)
++}
++
+ /// Serialize the given data structure as pretty-printed JSON into the I/O
+ /// stream.
+ ///
+@@ -2133,6 +2223,22 @@ where
+     Ok(writer)
+ }
+ 
++/// Serialize the given data structure as a Pythonic JSON byte vector.
++///
++/// # Errors
++///
++/// Serialization can fail if `T`'s implementation of `Serialize` decides to
++/// fail, or if `T` contains a map with non-string keys.
++#[inline]
++pub fn to_vec_pythonic<T>(value: &T) -> Result<Vec<u8>>
++where
++    T: ?Sized + Serialize,
++{
++    let mut writer = Vec::with_capacity(128);
++    tri!(to_writer_pythonic(&mut writer, value));
++    Ok(writer)
++}
++
+ /// Serialize the given data structure as a String of JSON.
+ ///
+ /// # Errors
+@@ -2171,6 +2277,25 @@ where
+     Ok(string)
+ }
+ 
++/// Serialize the given data structure as a String of Pythonic JSON representation.
++///
++/// # Errors
++///
++/// Serialization can fail if `T`'s implementation of `Serialize` decides to
++/// fail, or if `T` contains a map with non-string keys.
++#[inline]
++pub fn to_string_pythonic<T>(value: &T) -> Result<String>
++where
++    T: ?Sized + Serialize,
++{
++    let vec = tri!(to_vec_pythonic(value));
++    let string = unsafe {
++        // We do not emit invalid UTF-8.
++        String::from_utf8_unchecked(vec)
++    };
++    Ok(string)
++}
++
+ fn indent<W>(wr: &mut W, n: usize, s: &[u8]) -> io::Result<()>
+ where
+     W: ?Sized + io::Write,
