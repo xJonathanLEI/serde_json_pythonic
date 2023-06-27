@@ -7,7 +7,7 @@ set -e
 
 git show patch:pythonic.patch | git apply
 git add .
-git commit -m "feat: add pythonic formatter"
+git commit ${GIT_COMMIT_EXTRA_FLAGS} -m "feat: add pythonic formatter"
 
 # So that it works on both Linux on macOS
 find . -name '*.rs' -exec sed -i"-sed-backup" 's/serde_json/serde_json_pythonic/g' {} \;
@@ -16,4 +16,4 @@ find . -name '*-sed-backup' -exec rm {} \;
 
 cargo fmt --all
 git add .
-git commit -m "chore: rename crate to serde_json_pythonic"
+git commit ${GIT_COMMIT_EXTRA_FLAGS} -m "chore: rename crate to serde_json_pythonic"
