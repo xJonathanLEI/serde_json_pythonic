@@ -37,6 +37,17 @@ where
     }
 }
 
+impl<W> Serializer<W, PythonicFormatter>
+where
+    W: io::Write,
+{
+    /// Creates a new Pythonic JSON serializer.
+    #[inline]
+    pub fn pythonic(writer: W) -> Self {
+        Serializer::with_formatter(writer, PythonicFormatter)
+    }
+}
+
 impl<W, F> Serializer<W, F>
 where
     W: io::Write,
@@ -1984,6 +1995,65 @@ impl<'a> Formatter for PrettyFormatter<'a> {
     }
 }
 
+/// This structure formats a JSON value with Pythonic flavor.
+#[derive(Clone, Debug)]
+pub struct PythonicFormatter;
+
+impl Formatter for PythonicFormatter {
+    #[inline]
+    fn begin_array_value<W>(&mut self, writer: &mut W, first: bool) -> io::Result<()>
+    where
+        W: ?Sized + io::Write,
+    {
+        if first {
+            Ok(())
+        } else {
+            writer.write_all(b", ")
+        }
+    }
+
+    #[inline]
+    fn begin_object_key<W>(&mut self, writer: &mut W, first: bool) -> io::Result<()>
+    where
+        W: ?Sized + io::Write,
+    {
+        if first {
+            Ok(())
+        } else {
+            writer.write_all(b", ")
+        }
+    }
+
+    #[inline]
+    fn begin_object_value<W>(&mut self, writer: &mut W) -> io::Result<()>
+    where
+        W: ?Sized + io::Write,
+    {
+        writer.write_all(b": ")
+    }
+
+    #[inline]
+    fn write_string_fragment<W>(&mut self, writer: &mut W, fragment: &str) -> io::Result<()>
+    where
+        W: ?Sized + io::Write,
+    {
+        let mut buf = [0, 0];
+
+        for c in fragment.chars() {
+            if c.is_ascii() {
+                writer.write_all(&[c as u8])?;
+            } else {
+                let buf = c.encode_utf16(&mut buf);
+                for i in buf {
+                    writer.write_all(alloc::format!(r"\u{:4x}", i).as_bytes())?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 fn format_escaped_str<W, F>(writer: &mut W, formatter: &mut F, value: &str) -> io::Result<()>
 where
     W: ?Sized + io::Write,
@@ -2081,6 +2151,26 @@ where
     value.serialize(&mut ser)
 }
 
+/// Serialize the given data structure as Pythonic JSON into the I/O
+/// stream.
+///
+/// Serialization guarantees it only feeds valid UTF-8 sequences to the writer.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+pub fn to_writer_pythonic<W, T>(writer: W, value: &T) -> Result<()>
+where
+    W: io::Write,
+    T: ?Sized + Serialize,
+{
+    let mut ser = Serializer::pythonic(writer);
+    value.serialize(&mut ser)
+}
+
 /// Serialize the given data structure as pretty-printed JSON into the I/O
 /// stream.
 ///
@@ -2133,6 +2223,22 @@ where
     Ok(writer)
 }
 
+/// Serialize the given data structure as a Pythonic JSON byte vector.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+pub fn to_vec_pythonic<T>(value: &T) -> Result<Vec<u8>>
+where
+    T: ?Sized + Serialize,
+{
+    let mut writer = Vec::with_capacity(128);
+    tri!(to_writer_pythonic(&mut writer, value));
+    Ok(writer)
+}
+
 /// Serialize the given data structure as a String of JSON.
 ///
 /// # Errors
@@ -2164,6 +2270,25 @@ where
     T: ?Sized + Serialize,
 {
     let vec = tri!(to_vec_pretty(value));
+    let string = unsafe {
+        // We do not emit invalid UTF-8.
+        String::from_utf8_unchecked(vec)
+    };
+    Ok(string)
+}
+
+/// Serialize the given data structure as a String of Pythonic JSON representation.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+pub fn to_string_pythonic<T>(value: &T) -> Result<String>
+where
+    T: ?Sized + Serialize,
+{
+    let vec = tri!(to_vec_pythonic(value));
     let string = unsafe {
         // We do not emit invalid UTF-8.
         String::from_utf8_unchecked(vec)
