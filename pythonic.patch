@@ -106,7 +106,7 @@
 +            } else {
 +                let buf = c.encode_utf16(&mut buf);
 +                for i in buf {
-+                    write!(writer, r"\u{:4x}", i)?;
++                    writer.write_all(alloc::format!(r"\u{:4x}", i).as_bytes())?;
 +                }
 +            }
 +        }
