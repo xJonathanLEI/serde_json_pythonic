@@ -15,7 +15,7 @@ use serde::de::{IntoDeserializer, MapAccess};
 use serde::{forward_to_deserialize_any, Deserialize, Deserializer, Serialize, Serializer};
 
 #[cfg(feature = "arbitrary_precision")]
-pub(crate) const TOKEN: &str = "$serde_json::private::Number";
+pub(crate) const TOKEN: &str = "$serde_json_pythonic::private::Number";
 
 /// Represents a JSON number, whether integer or floating point.
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -80,7 +80,7 @@ impl Number {
     /// return the integer value.
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
     /// let big = i64::max_value() as u64 + 10;
     /// let v = json!({ "a": 64, "b": big, "c": 256.0 });
@@ -111,7 +111,7 @@ impl Number {
     /// return the integer value.
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
     /// let v = json!({ "a": 64, "b": -64, "c": 256.0 });
     ///
@@ -143,7 +143,7 @@ impl Number {
     /// `is_u64` return false but this is not a guarantee in the future.
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
     /// let v = json!({ "a": 256.0, "b": 64, "c": -64 });
     ///
@@ -175,7 +175,7 @@ impl Number {
     /// None otherwise.
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
     /// let big = i64::max_value() as u64 + 10;
     /// let v = json!({ "a": 64, "b": big, "c": 256.0 });
@@ -206,7 +206,7 @@ impl Number {
     /// None otherwise.
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
     /// let v = json!({ "a": 64, "b": -64, "c": 256.0 });
     ///
@@ -228,7 +228,7 @@ impl Number {
     /// Represents the number as f64 if possible. Returns None otherwise.
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
     /// let v = json!({ "a": 256.0, "b": 64, "c": -64 });
     ///
@@ -254,7 +254,7 @@ impl Number {
     /// ```
     /// # use std::f64;
     /// #
-    /// # use serde_json::Number;
+    /// # use serde_json_pythonic::Number;
     /// #
     /// assert!(Number::from_f64(256.0).is_some());
     ///
