@@ -5,6 +5,9 @@
 
 set -e
 
+git checkout master README.md
+git commit ${GIT_COMMIT_EXTRA_FLAGS} -m "docs: update README for fork"
+
 git show patch:pythonic.patch | git apply
 git add .
 git commit ${GIT_COMMIT_EXTRA_FLAGS} -m "feat: add pythonic formatter"
