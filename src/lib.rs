@@ -300,7 +300,7 @@
 //! [macro]: crate::json
 //! [`serde-json-core`]: https://github.com/rust-embedded-community/serde-json-core
 
-#![doc(html_root_url = "https://docs.rs/serde_json_pythonic/1.0.99")]
+#![doc(html_root_url = "https://docs.rs/serde_json_pythonic/0.1.2")]
 // Ignored clippy lints
 #![allow(
     clippy::collapsible_else_if,
