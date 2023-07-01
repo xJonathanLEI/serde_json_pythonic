@@ -1,7 +1,7 @@
-//! A map of String to serde_json::Value.
+//! A map of String to serde_json_pythonic::Value.
 //!
 //! By default the map is backed by a [`BTreeMap`]. Enable the `preserve_order`
-//! feature of serde_json to use [`IndexMap`] instead.
+//! feature of serde_json_pythonic to use [`IndexMap`] instead.
 //!
 //! [`BTreeMap`]: https://doc.rust-lang.org/std/collections/struct.BTreeMap.html
 //! [`IndexMap`]: https://docs.rs/indexmap/*/indexmap/map/struct.IndexMap.html
@@ -323,7 +323,7 @@ impl Eq for Map<String, Value> {}
 /// map.
 ///
 /// ```
-/// # use serde_json::Value;
+/// # use serde_json_pythonic::Value;
 /// #
 /// # let val = &Value::String("".to_owned());
 /// # let _ =
@@ -351,10 +351,10 @@ where
 /// present in the map.
 ///
 /// ```
-/// # use serde_json::json;
+/// # use serde_json_pythonic::json;
 /// #
-/// # let mut map = serde_json::Map::new();
-/// # map.insert("key".to_owned(), serde_json::Value::Null);
+/// # let mut map = serde_json_pythonic::Map::new();
+/// # map.insert("key".to_owned(), serde_json_pythonic::Value::Null);
 /// #
 /// map["key"] = json!("value");
 /// ```
@@ -530,7 +530,7 @@ impl<'a> Entry<'a> {
     /// # Examples
     ///
     /// ```
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// assert_eq!(map.entry("serde").key(), &"serde");
     /// ```
     pub fn key(&self) -> &String {
@@ -546,9 +546,9 @@ impl<'a> Entry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.entry("serde").or_insert(json!(12));
     ///
     /// assert_eq!(map["serde"], 12);
@@ -567,9 +567,9 @@ impl<'a> Entry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.entry("serde").or_insert_with(|| json!("hoho"));
     ///
     /// assert_eq!(map["serde"], "hoho".to_owned());
@@ -590,9 +590,9 @@ impl<'a> Entry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.entry("serde")
     ///     .and_modify(|e| *e = json!("rust"))
     ///     .or_insert(json!("cpp"));
@@ -626,9 +626,9 @@ impl<'a> VacantEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     ///
     /// match map.entry("serde") {
     ///     Entry::Vacant(vacant) => {
@@ -648,11 +648,11 @@ impl<'a> VacantEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     ///
     /// match map.entry("serde") {
     ///     Entry::Vacant(vacant) => {
@@ -673,11 +673,11 @@ impl<'a> OccupiedEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.insert("serde".to_owned(), json!(12));
     ///
     /// match map.entry("serde") {
@@ -697,11 +697,11 @@ impl<'a> OccupiedEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.insert("serde".to_owned(), json!(12));
     ///
     /// match map.entry("serde") {
@@ -721,11 +721,11 @@ impl<'a> OccupiedEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.insert("serde".to_owned(), json!([1, 2, 3]));
     ///
     /// match map.entry("serde") {
@@ -747,11 +747,11 @@ impl<'a> OccupiedEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.insert("serde".to_owned(), json!([1, 2, 3]));
     ///
     /// match map.entry("serde") {
@@ -774,11 +774,11 @@ impl<'a> OccupiedEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.insert("serde".to_owned(), json!(12));
     ///
     /// match map.entry("serde") {
@@ -799,11 +799,11 @@ impl<'a> OccupiedEntry<'a> {
     /// # Examples
     ///
     /// ```
-    /// # use serde_json::json;
+    /// # use serde_json_pythonic::json;
     /// #
-    /// use serde_json::map::Entry;
+    /// use serde_json_pythonic::map::Entry;
     ///
-    /// let mut map = serde_json::Map::new();
+    /// let mut map = serde_json_pythonic::Map::new();
     /// map.insert("serde".to_owned(), json!(12));
     ///
     /// match map.entry("serde") {
@@ -835,7 +835,7 @@ impl<'a> IntoIterator for &'a Map<String, Value> {
     }
 }
 
-/// An iterator over a serde_json::Map's entries.
+/// An iterator over a serde_json_pythonic::Map's entries.
 pub struct Iter<'a> {
     iter: IterImpl<'a>,
 }
@@ -860,7 +860,7 @@ impl<'a> IntoIterator for &'a mut Map<String, Value> {
     }
 }
 
-/// A mutable iterator over a serde_json::Map's entries.
+/// A mutable iterator over a serde_json_pythonic::Map's entries.
 pub struct IterMut<'a> {
     iter: IterMutImpl<'a>,
 }
@@ -885,7 +885,7 @@ impl IntoIterator for Map<String, Value> {
     }
 }
 
-/// An owning iterator over a serde_json::Map's entries.
+/// An owning iterator over a serde_json_pythonic::Map's entries.
 pub struct IntoIter {
     iter: IntoIterImpl,
 }
@@ -899,7 +899,7 @@ delegate_iterator!((IntoIter) => (String, Value));
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An iterator over a serde_json::Map's keys.
+/// An iterator over a serde_json_pythonic::Map's keys.
 pub struct Keys<'a> {
     iter: KeysImpl<'a>,
 }
@@ -913,7 +913,7 @@ delegate_iterator!((Keys<'a>) => &'a String);
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// An iterator over a serde_json::Map's values.
+/// An iterator over a serde_json_pythonic::Map's values.
 pub struct Values<'a> {
     iter: ValuesImpl<'a>,
 }
@@ -927,7 +927,7 @@ delegate_iterator!((Values<'a>) => &'a Value);
 
 //////////////////////////////////////////////////////////////////////////////
 
-/// A mutable iterator over a serde_json::Map's values.
+/// A mutable iterator over a serde_json_pythonic::Map's values.
 pub struct ValuesMut<'a> {
     iter: ValuesMutImpl<'a>,
 }
